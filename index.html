@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#c8102e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Тренировки">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23eaf0f5'/%3E%3Crect x='12' y='8' width='6' height='48' rx='3' fill='%231f4fa3'/%3E%3Crect x='29' y='8' width='6' height='48' rx='3' fill='%23c8102e'/%3E%3Crect x='46' y='8' width='6' height='48' rx='3' fill='%231f4fa3'/%3E%3C/svg%3E">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Тренировки между играми</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Russo+One&family=Golos+Text:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: phone-first card, sticky rink-line tab bar, one section per tab, rest timer docked at the bottom */
+:root{
+  --bg:#eaf0f5; --surface:#ffffff; --fg:#0f1c2a; --muted:#5a6a7b; --line:#d2dce5;
+  --red:#c8102e; --blue:#1f4fa3; --blue-soft:#e3ebf8; --red-soft:#fbe7ea;
+  --go:#1d7a46; --go-soft:#e2f3e9; --warn:#a86a00; --warn-soft:#fbf0d9; --stop:#b3122b; --stop-soft:#fbe4e8;
+  --display:"Russo One","Arial Narrow",Impact,sans-serif;
+  --body:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0b1219; --surface:#131d28; --fg:#e5ecf2; --muted:#93a3b3; --line:#243241;
+    --red:#ff5d70; --blue:#7fa8ff; --blue-soft:#18253a; --red-soft:#3a1820;
+    --go:#5fd393; --go-soft:#123224; --warn:#f2b84b; --warn-soft:#352a12; --stop:#ff6b7f; --stop-soft:#3a1720;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0b1219; --surface:#131d28; --fg:#e5ecf2; --muted:#93a3b3; --line:#243241;
+  --red:#ff5d70; --blue:#7fa8ff; --blue-soft:#18253a; --red-soft:#3a1820;
+  --go:#5fd393; --go-soft:#123224; --warn:#f2b84b; --warn-soft:#352a12; --stop:#ff6b7f; --stop-soft:#3a1720;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5;padding-inline:16px;padding-block:0 96px}
+.wrap{max-width:640px;margin:0 auto}
+header.top{padding-block:20px 12px;display:grid;gap:6px}
+.rink{height:6px;display:grid;grid-template-columns:1fr 6px 1fr 6px 1fr;gap:10%;margin-bottom:6px}
+.rink i{display:block;border-radius:3px}
+.rink i:nth-child(1),.rink i:nth-child(5){background:var(--blue)}
+.rink i:nth-child(3){background:var(--red)}
+h1{font-family:var(--display);font-weight:400;font-size:1.7rem;line-height:1.1;margin:0;text-wrap:balance;letter-spacing:.01em}
+.sub{color:var(--muted);margin:0;font-size:.95rem}
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);margin-inline:-16px;padding:8px 16px;border-bottom:2px solid var(--red);overflow-x:auto;scrollbar-width:none}
+nav.tabs::-webkit-scrollbar{display:none}
+.tabrow{display:flex;gap:6px;width:max-content}
+.tab{font:600 .9rem/1 var(--body);border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:9px 12px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.tab b{font-family:var(--display);font-weight:400;color:var(--blue);margin-right:4px}
+.tab[aria-selected="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.tab[aria-selected="true"] b{color:var(--bg)}
+.tab:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+section{padding-block:18px 8px;display:grid;gap:16px}
+h2{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:0;line-height:1.15;text-wrap:balance}
+h3{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0;font-weight:700}
+p{margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:.8rem;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--blue-soft);color:var(--blue)}
+.chip.red{background:var(--red-soft);color:var(--red)}
+.block{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:grid;gap:10px}
+.note{font-size:.92rem;color:var(--muted)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;background:var(--surface);padding:3px;gap:3px}
+.seg button{font:600 .88rem/1 var(--body);border:0;background:transparent;color:var(--fg);padding:8px 14px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--blue);color:#fff}
+.switch{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between}
+.switch span{font-weight:600;font-size:.92rem}
+/* week */
+.week{display:grid;gap:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.day{display:grid;grid-template-columns:52px 1fr;gap:12px;padding:12px 14px;border-top:1px solid var(--line);align-items:start}
+.day:first-child{border-top:0}
+.dname{font-family:var(--display);font-size:1.05rem;color:var(--muted)}
+.day.game .dname{color:var(--red)}
+.day.train .dname{color:var(--blue)}
+.dwhat{font-weight:600;min-width:0}
+.dwhat small{display:block;font-weight:400;color:var(--muted);font-size:.86rem}
+.day button.go{margin-top:6px;font:600 .82rem/1 var(--body);background:var(--blue-soft);color:var(--blue);border:0;padding:7px 10px;border-radius:8px;cursor:pointer}
+/* exercises */
+ol.ex,ul.ex{list-style:none;margin:0;padding:0;display:grid;gap:0}
+.ex li{border-top:1px solid var(--line)}
+.ex li:first-child{border-top:0}
+.ex label{display:grid;grid-template-columns:26px 1fr;gap:10px;padding:10px 0;cursor:pointer;align-items:start}
+.ex input{width:22px;height:22px;margin:1px 0 0;accent-color:var(--blue)}
+.ex .n{font-weight:600;display:block}
+.ex .d{display:block;color:var(--muted);font-size:.88rem}
+.ex .tag{font-family:var(--display);color:var(--blue);margin-right:6px}
+.ex input:checked ~ span .n{text-decoration:line-through;color:var(--muted)}
+.rowbtn{display:flex;justify-content:flex-end}
+.reset{font:600 .82rem/1 var(--body);background:transparent;border:1px solid var(--line);color:var(--muted);padding:8px 12px;border-radius:8px;cursor:pointer}
+/* lights */
+.light{border-radius:14px;padding:14px;display:grid;grid-template-columns:14px 1fr;gap:12px;border:1px solid var(--line)}
+.light i{width:14px;height:14px;border-radius:50%;margin-top:5px}
+.light.g{background:var(--go-soft)} .light.g i{background:var(--go)}
+.light.y{background:var(--warn-soft)} .light.y i{background:var(--warn)}
+.light.r{background:var(--stop-soft)} .light.r i{background:var(--stop)}
+.light strong{display:block}
+.pace{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.pace div{background:var(--blue-soft);border-radius:10px;padding:10px;display:grid;gap:2px}
+.pace b{font-family:var(--display);font-weight:400;font-size:1.2rem;color:var(--blue);font-variant-numeric:tabular-nums}
+.pace span{font-size:.78rem;color:var(--muted)}
+ul.plain{margin:0;padding-left:18px;display:grid;gap:6px}
+/* timer */
+.timer{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--surface);border-top:2px solid var(--red);padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px))}
+.timer .in{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:8px;justify-content:space-between}
+.clock{font-family:var(--display);font-size:1.6rem;font-variant-numeric:tabular-nums;min-width:72px}
+.clock.done{color:var(--red)}
+.tbtns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.tbtns button{font:600 .9rem/1 var(--body);border:1px solid var(--line);background:var(--bg);color:var(--fg);padding:9px 11px;border-radius:10px;cursor:pointer;font-variant-numeric:tabular-nums}
+.tbtns button.stop{color:var(--red)}
+.tlabel{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;display:block}
+@media (prefers-reduced-motion:no-preference){.tab,.seg button{transition:background .15s,color .15s}}
+</style>
+</head><body>
+
+<div class="wrap">
+<header class="top">
+  <div class="rink" aria-hidden="true"><i></i><span></span><i></i><span></span><i></i></div>
+  <h1>Тренировки между играми</h1>
+  <p class="sub">Сезон до весны: держим форму, растим силу и выносливость. 40 минут, двор и стадион.</p>
+</header>
+
+<nav class="tabs" aria-label="Разделы">
+  <div class="tabrow" role="tablist">
+    <button class="tab" role="tab" data-tab="week" id="t-week">Неделя</button>
+    <button class="tab" role="tab" data-tab="a" id="t-a"><b>А</b>Сила</button>
+    <button class="tab" role="tab" data-tab="b" id="t-b"><b>Б</b>Скорость</button>
+    <button class="tab" role="tab" data-tab="c" id="t-c"><b>В</b>Выносливость</button>
+    <button class="tab" role="tab" data-tab="mob" id="t-mob">Пн вечер</button>
+    <button class="tab" role="tab" data-tab="ready" id="t-ready">Готовность</button>
+    <button class="tab" role="tab" data-tab="food" id="t-food">Питание</button>
+  </div>
+</nav>
+
+<!-- WEEK -->
+<section id="week" role="tabpanel">
+  <div class="switch">
+    <span>Турнирная игра на этой неделе</span>
+    <div class="seg" role="group" aria-label="День игры">
+      <button type="button" data-game="sat" id="g-sat">Суббота</button>
+      <button type="button" data-game="sun" id="g-sun">Воскресенье</button>
+    </div>
+  </div>
+  <div class="week">
+    <div class="day"><div class="dname">Пн</div><div class="dwhat">Вечер: мобильность и кор, 15–20 мин<small>Пах, поясница, тазобедренные</small><button class="go" data-jump="mob">Открыть</button></div></div>
+    <div class="day game"><div class="dname">Вт</div><div class="dwhat">Игра<small>Перед игрой 10 мин динамической разминки</small></div></div>
+    <div class="day train"><div class="dname">Ср</div><div class="dwhat">8:10 · Тренировка А, сила<small>Главная силовая недели, 48 ч до игры</small><button class="go" data-jump="a">Открыть</button></div></div>
+    <div class="day game"><div class="dname">Чт</div><div class="dwhat">Тренировка и игра</div></div>
+    <div class="day train"><div class="dname">Пт</div><div class="dwhat">
+      <span data-when="sun">8:10 · Тренировка Б, полная</span><span data-when="sat">8:10 · Тренировка Б, облегчённая (25 мин)</span>
+      <small data-when="sun">Спринты, прыжки, взрывной верх</small><small data-when="sat">Завтра игра: проснуться, а не устать</small>
+      <button class="go" data-jump="b">Открыть</button></div></div>
+    <div class="day" data-when="sun"><div class="dname" style="color:var(--blue)">Сб</div><div class="dwhat">Утро · Тренировка В, полная<small>Интервалы 400/800 и круговая</small><button class="go" data-jump="c">Открыть</button></div></div>
+    <div class="day game" data-when="sun"><div class="dname">Вс</div><div class="dwhat">Вечер · турнирная игра</div></div>
+    <div class="day game" data-when="sat"><div class="dname">Сб</div><div class="dwhat">Вечер · турнирная игра</div></div>
+    <div class="day" data-when="sat"><div class="dname" style="color:var(--blue)">Вс</div><div class="dwhat">Утро · Тренировка В, лёгкая<small>Ровный бег и верх тела, без интервалов</small><button class="go" data-jump="c">Открыть</button></div></div>
+  </div>
+  <div class="block">
+    <h3>Каждая тренировка, ~40 мин</h3>
+    <ul class="plain">
+      <li><b>8–10 мин движение:</b> трусца 400 м, затем по 2×20 м: скрестный бег, приставной шаг, бег спиной, поворот 180° со стартом, прыжки конькобежца, высокое колено.</li>
+      <li><b>8–12 мин беговой блок</b> по плану дня.</li>
+      <li><b>18–20 мин работа с весом.</b></li>
+      <li><b>2–3 мин заминка:</b> шаг и пара растяжек.</li>
+    </ul>
+  </div>
+  <div class="block">
+    <h3>Цикл на 4 недели</h3>
+    <p>Недели 1–3: +1–2 повтора, +1 подтягивание, интервалы чуть быстрее. Неделя 4: разгрузка, объём на треть меньше.</p>
+    <p class="note">Гиря 16 кг скоро станет мала для ног. Хорошая покупка: 24 кг.</p>
+  </div>
+</section>
+
+<!-- A -->
+<section id="a" role="tabpanel" hidden>
+  <h2>А · Сила</h2>
+  <div class="meta"><span class="chip">Среда 8:10</span><span class="chip">Суперсеты × 3 круга</span><span class="chip">Отдых 60–90 с</span></div>
+  <div class="block">
+    <h3>Беговой блок</h3>
+    <ul class="ex" data-group="a-run">
+      <li><label><input type="checkbox" id="a-r1"><span><span class="n">5 ускорений по 20–30 м</span><span class="d">85–90%, обратно шагом. Вы после игры, на максимум не нужно</span></span></label></li>
+    </ul>
+  </div>
+  <div class="block">
+    <h3>Силовой блок</h3>
+    <ul class="ex">
+      <li><label><input type="checkbox" id="a-1"><span><span class="n"><span class="tag">A1</span>Болгарский выпад с гирей 16 кг</span><span class="d">6–8 на ногу, задняя нога на скамейке</span></span></label></li>
+      <li><label><input type="checkbox" id="a-2"><span><span class="n"><span class="tag">A2</span>Подтягивания</span><span class="d">5–8 раз</span></span></label></li>
+      <li><label><input type="checkbox" id="a-3"><span><span class="n"><span class="tag">B1</span>Румынская тяга на одной ноге с гирей</span><span class="d">8 на ногу, баланс и задняя поверхность бедра</span></span></label></li>
+      <li><label><input type="checkbox" id="a-4"><span><span class="n"><span class="tag">B2</span>Брусья</span><span class="d">6–10 раз (или отжимания)</span></span></label></li>
+      <li><label><input type="checkbox" id="a-5"><span><span class="n"><span class="tag">C1</span>Копенгагенская планка</span><span class="d">20 с на сторону, колено верхней ноги на скамейке. Профилактика паха</span></span></label></li>
+      <li><label><input type="checkbox" id="a-6"><span><span class="n"><span class="tag">C2</span>Фермерская прогулка с гирей в одной руке</span><span class="d">30 м на каждую руку. Поясница без нагрузки на позвоночник</span></span></label></li>
+    </ul>
+    <div class="rowbtn"><button class="reset" data-reset="a">Сбросить отметки</button></div>
+  </div>
+</section>
+
+<!-- B -->
+<section id="b" role="tabpanel" hidden>
+  <h2>Б · Скорость</h2>
+  <div class="switch">
+    <span>Версия</span>
+    <div class="seg" role="group" aria-label="Версия тренировки Б">
+      <button type="button" data-game="sun" id="b-sun">Полная</button>
+      <button type="button" data-game="sat" id="b-sat">Облегчённая</button>
+    </div>
+  </div>
+  <p class="note" data-when="sun">Игра в воскресенье. Отдыхайте полностью: скорость тренируется только на свежих мышцах.</p>
+  <p class="note" data-when="sat">Завтра игра. 25 минут: задача проснуться, а не устать.</p>
+  <div class="block" data-when="sun">
+    <ul class="ex">
+      <li><label><input type="checkbox" id="b-1"><span><span class="n">6 спринтов по 20 м с разных стартов</span><span class="d">Лицом, боком, спиной с разворотом, из выпада</span></span></label></li>
+      <li><label><input type="checkbox" id="b-2"><span><span class="n">Прыжки конькобежца 3×5 на сторону</span><span class="d">Фиксация приземления 2 с</span></span></label></li>
+      <li><label><input type="checkbox" id="b-3"><span><span class="n">Махи гирей 4×10</span><span class="d">Каждый мах взрывной</span></span></label></li>
+      <li><label><input type="checkbox" id="b-4"><span><span class="n">Взрывные отжимания 3×6</span><span class="d">Руки отрываются от земли</span></span></label></li>
+      <li><label><input type="checkbox" id="b-5"><span><span class="n">«Боксёрка» с гантелями 1,5 кг 3×15 с</span><span class="d">На скорость рук</span></span></label></li>
+      <li><label><input type="checkbox" id="b-6"><span><span class="n">Подъёмы ног в висе 3×10</span></span></label></li>
+    </ul>
+    <div class="rowbtn"><button class="reset" data-reset="b">Сбросить отметки</button></div>
+  </div>
+  <div class="block" data-when="sat">
+    <ul class="ex">
+      <li><label><input type="checkbox" id="bl-1"><span><span class="n">Разминка-движение</span><span class="d">Как обычно, 8–10 мин</span></span></label></li>
+      <li><label><input type="checkbox" id="bl-2"><span><span class="n">4 ускорения по 20 м на 80%</span></span></label></li>
+      <li><label><input type="checkbox" id="bl-3"><span><span class="n">Прыжки конькобежца 2×5 на сторону</span></span></label></li>
+      <li><label><input type="checkbox" id="bl-4"><span><span class="n">Махи гирей 2×10</span></span></label></li>
+      <li><label><input type="checkbox" id="bl-5"><span><span class="n">Мобильность 5 мин</span><span class="d">Из понедельничного комплекса</span></span></label></li>
+    </ul>
+    <div class="rowbtn"><button class="reset" data-reset="b">Сбросить отметки</button></div>
+  </div>
+</section>
+
+<!-- C -->
+<section id="c" role="tabpanel" hidden>
+  <h2>В · Выносливость</h2>
+  <div class="switch">
+    <span>Версия</span>
+    <div class="seg" role="group" aria-label="Версия тренировки В">
+      <button type="button" data-game="sun" id="c-sun">Полная (Сб)</button>
+      <button type="button" data-game="sat" id="c-sat">Лёгкая (Вс)</button>
+    </div>
+  </div>
+  <div data-when="sun" style="display:grid;gap:16px">
+    <div class="block">
+      <h3>Беговой блок, чередуйте по неделям</h3>
+      <div class="switch">
+        <span>Эта неделя</span>
+        <div class="seg" role="group" aria-label="Интервалы">
+          <button type="button" data-int="400" id="i-400">4×400</button>
+          <button type="button" data-int="800" id="i-800">3×800</button>
+        </div>
+      </div>
+      <ul class="ex">
+        <li data-int-when="400"><label><input type="checkbox" id="c-r4"><span><span class="n">4×400 м</span><span class="d">Отдых 90 с шагом</span></span></label></li>
+        <li data-int-when="800"><label><input type="checkbox" id="c-r8"><span><span class="n">3×800 м</span><span class="d">Отдых 2 мин</span></span></label></li>
+      </ul>
+      <div class="pace">
+        <div><b>5:42</b><span>ваш темп 10 км, мин/км</span></div>
+        <div><b>1:55–2:05</b><span>400 м</span></div>
+        <div><b>4:05–4:20</b><span>800 м</span></div>
+      </div>
+      <p class="note">По ощущениям 8 из 10: тяжело, но ровно. Первую тренировку считайте тестом и подстройте темп.</p>
+    </div>
+    <div class="block">
+      <h3>Круговая × 3, почти без отдыха</h3>
+      <ul class="ex">
+        <li><label><input type="checkbox" id="c-1"><span><span class="n">Гоблет-присед с гирей</span><span class="d">12 раз</span></span></label></li>
+        <li><label><input type="checkbox" id="c-2"><span><span class="n">Жимовой толчок гирей</span><span class="d">8 на руку</span></span></label></li>
+        <li><label><input type="checkbox" id="c-3"><span><span class="n">Тяга диска одной рукой в наклоне</span><span class="d">10 на руку</span></span></label></li>
+        <li><label><input type="checkbox" id="c-4"><span><span class="n">Обратные выпады с диском у груди</span><span class="d">8 на ногу</span></span></label></li>
+        <li><label><input type="checkbox" id="c-5"><span><span class="n">Боковая планка</span><span class="d">30 с на сторону</span></span></label></li>
+      </ul>
+      <div class="rowbtn"><button class="reset" data-reset="c">Сбросить отметки</button></div>
+    </div>
+  </div>
+  <div class="block" data-when="sat">
+    <p class="note">Вчера была игра. Без интервалов и тяжёлых ног.</p>
+    <ul class="ex">
+      <li><label><input type="checkbox" id="cl-1"><span><span class="n">Ровный бег 20–25 мин</span><span class="d">Можно с гантелями 1,5 кг, темп разговорный</span></span></label></li>
+      <li><label><input type="checkbox" id="cl-2"><span><span class="n">Подтягивания 3×5–6</span></span></label></li>
+      <li><label><input type="checkbox" id="cl-3"><span><span class="n">Отжимания 3×10–12</span></span></label></li>
+      <li><label><input type="checkbox" id="cl-4"><span><span class="n">Тяга диска одной рукой 3×10</span></span></label></li>
+      <li><label><input type="checkbox" id="cl-5"><span><span class="n">Боковая планка и «птица-собака»</span><span class="d">По 2×30 с</span></span></label></li>
+    </ul>
+    <div class="rowbtn"><button class="reset" data-reset="c">Сбросить отметки</button></div>
+  </div>
+  <p class="note">Гантели 1,5 кг подходят для лёгкого бега. На интервалы и спринты их не берите: они ломают технику.</p>
+</section>
+
+<!-- MOB -->
+<section id="mob" role="tabpanel" hidden>
+  <h2>Понедельник вечером</h2>
+  <div class="meta"><span class="chip">15–20 мин</span><span class="chip">По 1–2 мин на упражнение</span></div>
+  <div class="block">
+    <ul class="ex">
+      <li><label><input type="checkbox" id="m-1"><span><span class="n">Поза 90/90</span><span class="d">Тазобедренные, обе стороны</span></span></label></li>
+      <li><label><input type="checkbox" id="m-2"><span><span class="n">Покачивания назад на четвереньках, нога в сторону</span><span class="d">Растяжка приводящих (пах)</span></span></label></li>
+      <li><label><input type="checkbox" id="m-3"><span><span class="n">Растяжка сгибателей бедра у стены</span><span class="d">У хоккеистов они зажаты, отсюда часто болит поясница</span></span></label></li>
+      <li><label><input type="checkbox" id="m-4"><span><span class="n">Кошка-корова</span></span></label></li>
+      <li><label><input type="checkbox" id="m-5"><span><span class="n">Ротации грудного отдела</span><span class="d">Лёжа на боку, «открыть книгу»</span></span></label></li>
+      <li><label><input type="checkbox" id="m-6"><span><span class="n">Скручивание Макгилла</span><span class="d">3×10 с</span></span></label></li>
+      <li><label><input type="checkbox" id="m-7"><span><span class="n">Боковая планка</span><span class="d">3×10 с на сторону</span></span></label></li>
+      <li><label><input type="checkbox" id="m-8"><span><span class="n">«Птица-собака»</span><span class="d">3×10 с на сторону</span></span></label></li>
+    </ul>
+    <div class="rowbtn"><button class="reset" data-reset="mob">Сбросить отметки</button></div>
+  </div>
+</section>
+
+<!-- READY -->
+<section id="ready" role="tabpanel" hidden>
+  <h2>Светофор готовности</h2>
+  <p class="note">Восстановление 16–36 ч после хоккея — это нормально. Оно не запрещает тренироваться, а говорит, что сейчас не время для максимума. Утром смотрите на сон, Training Readiness и самочувствие.</p>
+  <div class="light g"><i></i><div><strong>Готовность 50+, сон от 6,5 ч, ничего не болит</strong>Делаете по плану.</div></div>
+  <div class="light y"><i></i><div><strong>Готовность 25–49 или сон меньше 6 ч</strong>Минус один круг, без спринтов и прыжков, вес оставляете.</div></div>
+  <div class="light r"><i></i><div><strong>Готовность ниже 25, сон меньше 5 ч, тянет пах или поясницу</strong>25 мин лёгкой трусцы или ходьбы плюс понедельничная мобильность.</div></div>
+  <div class="block"><p><b>Правило паха:</b> если резко потянуло, сразу останавливайтесь. Не дотягивайте подход.</p></div>
+</section>
+
+<!-- FOOD -->
+<section id="food" role="tabpanel" hidden>
+  <h2>Питание</h2>
+  <div class="block">
+    <h3>После игры, 23:00</h3>
+    <p>Поесть после игры правильно. Плохо, когда ужин тяжёлый и жирный. Белок и немного углеводов: омлет с хлебом, курица или рыба с небольшой порцией риса. Приготовьте заранее.</p>
+  </div>
+  <div class="block">
+    <h3>Перед игрой</h3>
+    <p>Нормальный приём пищи за 3–4 ч (около 17:00 при игре в 20:30). За час — перекус: банан, хлеб с мёдом.</p>
+  </div>
+  <div class="block">
+    <h3>Белок</h3>
+    <p>Около 1,6 г на кг веса в день, на 3–4 приёма. Без молока: яйца, мясо, рыба, творог и кефир, если их едите.</p>
+  </div>
+  <div class="block">
+    <h3>Утренние тренировки</h3>
+    <p>До: вода и, если хочется, полбанана. После: завтрак с белком — яйца, каша, творог.</p>
+  </div>
+  <div class="block">
+    <h3>Сон</h3>
+    <p>Главный рычаг. В дни без игр (Пн, Ср, Пт) ложитесь так, чтобы спать 7,5 ч.</p>
+  </div>
+</section>
+</div>
+
+<div class="timer" role="region" aria-label="Таймер отдыха">
+  <div class="in">
+    <div><span class="tlabel">Отдых</span><span class="clock" id="clock">0:00</span></div>
+    <div class="tbtns">
+      <button type="button" data-sec="60" id="tm-60">60</button>
+      <button type="button" data-sec="90" id="tm-90">90</button>
+      <button type="button" data-sec="120" id="tm-120">120</button>
+      <button type="button" class="stop" id="tm-stop">Стоп</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const store={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+  const tabs=[...document.querySelectorAll('.tab')];
+  const panels=[...document.querySelectorAll('section[role=tabpanel]')];
+  function show(id,push){
+    if(!document.getElementById(id))id='week';
+    tabs.forEach(t=>t.setAttribute('aria-selected',t.dataset.tab===id?'true':'false'));
+    panels.forEach(p=>p.hidden=p.id!==id);
+    store.set('hp-tab',id);
+    const t=tabs.find(t=>t.dataset.tab===id); if(t)t.scrollIntoView({block:'nearest',inline:'nearest'});
+    if(push)window.scrollTo(0,0);
+  }
+  tabs.forEach(t=>t.addEventListener('click',()=>show(t.dataset.tab,true)));
+  document.querySelectorAll('[data-jump]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.jump,true)));
+  const hash=(location.hash||'').slice(1);
+  show(hash&&document.getElementById(hash)?hash:store.get('hp-tab','week'));
+
+  // game day
+  function setGame(g){
+    document.querySelectorAll('[data-game]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.game===g?'true':'false'));
+    document.querySelectorAll('[data-when]').forEach(el=>el.hidden=el.dataset.when!==g);
+    store.set('hp-game',g);
+  }
+  document.querySelectorAll('[data-game]').forEach(b=>b.addEventListener('click',()=>setGame(b.dataset.game)));
+  setGame(store.get('hp-game','sun'));
+
+  function setInt(n){
+    document.querySelectorAll('[data-int]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.int===n?'true':'false'));
+    document.querySelectorAll('[data-int-when]').forEach(el=>el.hidden=el.dataset.intWhen!==n);
+    store.set('hp-int',n);
+  }
+  document.querySelectorAll('[data-int]').forEach(b=>b.addEventListener('click',()=>setInt(b.dataset.int)));
+  setInt(store.get('hp-int','400'));
+
+  // checkboxes
+  const checks=store.get('hp-checks',{});
+  document.querySelectorAll('.ex input[type=checkbox]').forEach(cb=>{
+    cb.checked=!!checks[cb.id];
+    cb.addEventListener('change',()=>{checks[cb.id]=cb.checked;store.set('hp-checks',checks)});
+  });
+  document.querySelectorAll('[data-reset]').forEach(b=>b.addEventListener('click',()=>{
+    document.getElementById(b.dataset.reset).querySelectorAll('input[type=checkbox]').forEach(cb=>{cb.checked=false;checks[cb.id]=false});
+    store.set('hp-checks',checks);
+  }));
+
+  // timer
+  const clock=document.getElementById('clock');
+  let end=0,iv=null,ac=null,lock=null;
+  function fmt(s){return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
+  function beep(){try{if(!ac)return;const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=880;g.gain.value=.2;o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+.6)}catch(e){}}
+  function tick(){
+    const left=Math.max(0,Math.ceil((end-Date.now())/1000));
+    clock.textContent=fmt(left);
+    if(left===0){clearInterval(iv);iv=null;clock.classList.add('done');beep();}
+  }
+  document.querySelectorAll('[data-sec]').forEach(b=>b.addEventListener('click',()=>{
+    try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();ac.resume&&ac.resume()}catch(e){}
+    try{if('wakeLock' in navigator&&!lock)navigator.wakeLock.request('screen').then(l=>{lock=l;l.addEventListener('release',()=>lock=null)}).catch(()=>{})}catch(e){}
+    end=Date.now()+(+b.dataset.sec)*1000;clock.classList.remove('done');
+    clearInterval(iv);iv=setInterval(tick,250);tick();
+  }));
+  document.getElementById('tm-stop').addEventListener('click',()=>{clearInterval(iv);iv=null;clock.textContent='0:00';clock.classList.remove('done')});
+})();
+</script>
+</body></html>
